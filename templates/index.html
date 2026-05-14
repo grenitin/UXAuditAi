@@ -22,6 +22,28 @@
       document.documentElement.setAttribute('data-theme', saved);
     })();
   </script>
+  <style>
+    .toast-notification {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #000000;
+      color: #ffffff;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      z-index: 10000;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: toastFadeIn 0.3s ease-out;
+    }
+    @keyframes toastFadeIn {
+      from { transform: translate(-50%, 10px); opacity: 0; }
+      to { transform: translate(-50%, 0); opacity: 1; }
+    }
+  </style>
 </head>
 <body>
 
