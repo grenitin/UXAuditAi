@@ -1,16 +1,9 @@
 services:
   - type: web
     name: UXAuditAi
-    runtime: python
-    buildCommand: ./render-build.sh
-    startCommand: gunicorn app:app
+    env: docker
     envVars:
       - key: FLASK_DEBUG
         value: "False"
       - key: FLASK_PORT
         value: "10000"
-      - key: PYTHON_VERSION
-        value: "3.11.0"
-      - key: PLAYWRIGHT_BROWSERS_PATH
-        value: /opt/render/project/pw-browsers
-
