@@ -4,5 +4,7 @@ set -o errexit
 
 pip install -r requirements.txt
 
-# Install Playwright and its system-level dependencies
+# Force Playwright to install inside the project directory for persistence
+export PLAYWRIGHT_BROWSERS_PATH=/opt/render/project/pw-browsers
 python -m playwright install --with-deps chromium
+
