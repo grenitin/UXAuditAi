@@ -143,9 +143,9 @@ def run_ux_audit_worker(task_id, url, user_api_key=None, provider='gemini'):
         if not working_model_name:
             raise Exception(f"AI Handshake Failed: No compatible models found for your {provider} API key. Please check your key permissions.")
 
-        update_status(task_id, f"Handshake Success: {working_model_name} active. Crawling landing page...", current_task="discovery")
-        
+        # PILOT FOCUS: Exclusively audit the landing page provided
         urls_to_crawl = [url if url.startswith('http') else 'https://' + url]
+
         
         headers = ["Index","Heuristic","Screenshot","Page URL","Page Name","Issue Description","Behavioral Insight","Attitudinal Insight","Cognitive Load","Severity","Priority","Recommendation", "Model", "Tokens", "Cost (Rs)"]
         audit_results = []
