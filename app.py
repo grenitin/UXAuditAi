@@ -11,6 +11,10 @@ Then open: http://localhost:5050
 
 import sys
 import os
+
+# Force Playwright to use the persistent cloud path
+os.environ['PLAYWRIGHT_BROWSERS_PATH'] = '/opt/render/project/pw-browsers'
+
 import uuid
 import json
 import threading
