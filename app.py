@@ -371,6 +371,4 @@ if __name__ == '__main__':
     
     print(f"\n🚀 UX Audit Server running at: http://localhost:{port}\n")
     # Disabled reloader to prevent Playwright session crashes on macOS
-    app.run(debug=debug_mode, use_reloader=False, port=port, threaded=True)
-
-
+    app.run(host='0.0.0.0', debug=debug_mode, use_reloader=False, port=port, threaded=True)
