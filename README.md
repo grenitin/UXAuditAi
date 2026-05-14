@@ -9,9 +9,15 @@ A high-fidelity, AI-powered UX Heuristic Evaluation tool. This engine uses Playw
 - **Professional Reports**: Generates interactive dashboards and downloadable Excel reports.
 - **Sharing Protocol**: Integrated invitation system to share reports with clients via email.
 
-## 🛠 Setup Instructions
+## 🛠 Technical Stack
+- **Backend**: Python / Flask
+- **Vision Engine**: Playwright (Headless Chrome)
+- **Intelligence**: LiteLLM (Supporting Gemini, OpenAI, Anthropic)
+- **Data Layers**: JSON, CSV, and Excel (Pandas)
+- **Frontend**: Modern Vanilla JS, CSS3 (Glassmorphism), HTML5
 
 ### 1. Prerequisites
+
 - Python 3.9+
 - [Node.js](https://nodejs.org/) (Required for Playwright browser engines)
 
@@ -37,7 +43,14 @@ python app.py
 ```
 Then visit `http://localhost:5051` in your browser.
 
+## 📂 Project Structure
+- `app.py`: Main Flask entry point and API routes.
+- `scripts/`: Vision logic and AI heuristic analysis.
+- `templates/`: High-fidelity HTML5 dashboards.
+- `static/`: Modern UI assets, CSS, and dynamic screenshots.
+
 ## 📄 License
+
 This project is released into the Public Domain.
 
 ---
