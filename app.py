@@ -13,7 +13,8 @@ import sys
 import os
 
 # Force Playwright to use the persistent cloud path
-os.environ['PLAYWRIGHT_BROWSERS_PATH'] = '/opt/render/project/src/pw-browsers'
+os.environ['PLAYWRIGHT_BROWSERS_PATH'] = os.path.join(os.path.dirname(__file__), 'pw-browsers')
+
 
 
 import uuid
