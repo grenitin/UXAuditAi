@@ -1,0 +1,9 @@
+flask
+python-dotenv
+pandas
+openpyxl
+litellm
+beautifulsoup4
+playwright
+requests
+pillow

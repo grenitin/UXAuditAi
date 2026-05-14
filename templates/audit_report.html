@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ brand }} - Interactive UX Audit Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --accent: #7c6ef2;
+            --accent-glow: rgba(124, 110, 242, 0.4);
+            --border: rgba(255, 255, 255, 0.08);
+            --text-mid: rgba(255, 255, 255, 0.7);
+            --text-dim: rgba(255, 255, 255, 0.4);
+            --glass: rgba(255, 255, 255, 0.02);
+            --card-radius: 24px;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --title-grad: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.6) 100%);
+            --card-bg: rgba(255, 255, 255, 0.02);
+            --sev-high: #f87171;
+            --sev-med: #fbbf24;
+            --sev-low: #60a5fa;
+            --sev-high-bg: rgba(239, 68, 68, 0.1);
+            --sev-med-bg: rgba(245, 158, 11, 0.1);
+            --sev-low-bg: rgba(59, 130, 246, 0.1);
+        }
+
+        
+        [data-theme="light"] .header, 
+        [data-theme="light"] .header.scrolled {
+            background: #ffffff !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+            backdrop-filter: blur(20px) !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+        }
+        [data-theme="light"] .header .brand-info h1,
+        [data-theme="light"] .header.scrolled .brand-info h1 {
+            background: none !important;
+            -webkit-text-fill-color: #111111 !important;
+            color: #111111 !important;
+        }
+        [data-theme="light"] {
+            --bg: #f5f6f8;
+            --border: rgba(0, 0, 0, 0.1);
+            --text-mid: #1a1a1a;
+            --text-dim: #666666;
+            --glass: rgba(255, 255, 255, 0.8);
+            --title-grad: linear-gradient(180deg, #111 0%, #444 100%);
+            --card-bg: #ffffff;
+            --sev-high: #7f1d1d;
+            --sev-med: #78350f;
+            --sev-low: #1e3a8a;
+            --sev-high-bg: rgba(239, 68, 68, 0.08);
+            --sev-med-bg: rgba(245, 158, 11, 0.08);
+            --sev-low-bg: rgba(59, 130, 246, 0.08);
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text-mid);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            line-height: 1.5;
+            transition: background 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        .bg-grid {
+            position: fixed; inset: 0;
+            background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.03) 1px, transparent 0);
+            background-size: 40px 40px;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* --- Header Section --- */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: var(--bg); opacity: 0.98;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 0;
+            margin-bottom: 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        [data-theme="light"] .header {
+            background: rgba(245, 246, 248, 0.8) !important;
+        }
+
+        .brand-info h1 {
+            font-size: 2.5rem;
+            margin: 0;
+            letter-spacing: -0.04em;
+            background: var(--title-grad);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .audit-id {
+            font-family: 'JetBrains Mono';
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            color: var(--text-mid);
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            user-select: none;
+        }
+
+        .btn-icon {
+            width: 48px !important;
+            height: 48px !important;
+            aspect-ratio: 1 / 1 !important;
+            padding: 0 !important;
+            flex-shrink: 0;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.2);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .btn:active {
+            transform: translateY(0) scale(0.96);
+        }
+
+        [data-theme="light"] .btn:not(.btn-primary) {
+            background: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border-color: transparent;
+            color: #fff !important;
+        }
+
+        .btn-primary:hover {
+            background: #6b5ae0;
+            box-shadow: 0 5px 20px var(--accent-glow);
+            transform: translateY(-2px);
+        }
+
+        #shareBtn:hover, #stickyShareBtn:hover, #downloadBtn:hover, #stickyDownloadBtn:hover, #saveBtn:hover {
+            background: rgba(124, 110, 242, 0.1);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        [data-theme="light"] #shareBtn:hover, [data-theme="light"] #downloadBtn:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .header:not(.scrolled) .header-actions #stickyShareBtn, 
+        .header:not(.scrolled) .header-actions #stickyDownloadBtn {
+            display: none !important;
+        }
+
+        /* Swap Home and Theme positions only on desktop */
+        .header-actions {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .header-actions .btn:first-child {
+            order: 2;
+        }
+
+        .header-actions #themeBtn {
+            order: 1;
+        }
+
+        .header.scrolled {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 0.8rem 2rem;
+            background: var(--bg); opacity: 0.98;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        [data-theme="light"] .header.scrolled {
+            background: #ffffff !important;
+            border-bottom: 1px solid rgba(0,0,0,0.1) !important;
+            backdrop-filter: blur(20px) !important;
+        }
+
+        [data-theme="light"] .header.scrolled .brand-info h1 {
+            background: none !important;
+            -webkit-text-fill-color: #111111 !important;
+            color: #111111 !important;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        .header.scrolled .brand-info h1 {
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header.scrolled .audit-id {
+            display: none;
+        }
+
+        .header.scrolled .issues-badge {
+            padding: 0.3rem 0.8rem;
+            font-size: 0.7rem;
+        }
+
+        .controls-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        /* --- View Toggle --- */
+        .view-toggle {
+            display: flex;
+            background: var(--glass);
+            padding: 0.4rem;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            width: fit-content;
+        }
+
+        .toggle-btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            color: var(--text-dim);
+            user-select: none;
+        }
+
+        .toggle-btn:hover:not(.active) {
+            color: var(--text-mid);
+            background: rgba(255,255,255,0.03);
+        }
+
+        .toggle-btn:active {
+            transform: scale(0.95);
+        }
+
+        .toggle-btn.active {
+            background: rgba(255,255,255,0.08);
+            color: var(--text-mid);
+        }
+
+        [data-theme="light"] .toggle-btn.active {
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* --- Spreadsheet View --- */
+        .spreadsheet-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        .spreadsheet-container.active {
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: rgba(255,255,255,0.03);
+            padding: 1.2rem 1rem;
+            font-family: 'JetBrains Mono';
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border);
+        }
+
+        [data-theme="light"] th {
+            background: rgba(0,0,0,0.02);
+            color: #888;
+        }
+
+        td {
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            vertical-align: middle;
+        }
+
+        .row-screenshot {
+            width: 80px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            cursor: zoom-in;
+        }
+
+        .editable-select {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            color: var(--text-mid);
+            padding: 0.4rem;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono';
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        [data-theme="light"] .editable-select {
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .editable-select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* --- Cards View --- */
+        .cards-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+
+        .cards-container.hidden {
+            display: none;
+        }
+
+        .report-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            padding: 2.5rem;
+            position: relative;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+        }
+
+        .report-card:hover {
+            border-color: rgba(124, 110, 242, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .badge-stack {
+            display: flex;
+            gap: 0.6rem;
+        }
+
+        .card-meta {
+            display: flex;
+            flex-direction: row;
+            gap: 0.6rem;
+        }
+
+        .meta-pill {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .meta-pill:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .meta-pill.sev-high { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); color: #f87171; }
+        .meta-pill.sev-med { background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3); color: #fbbf24; }
+        .meta-pill.sev-low { background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.3); color: #60a5fa; }
+
+        .meta-pill.pri-p0, .meta-pill.pri-p1 { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); color: #f87171; }
+        .meta-pill.pri-p2 { background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3); color: #fbbf24; }
+        .meta-pill.pri-p3 { background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.3); color: #60a5fa; }
+
+        .meta-pill select {
+            background: transparent;
+            border: none;
+            color: inherit;
+            font-family: inherit;
+            font-size: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            outline: none;
+            appearance: none;
+            padding-right: 1.2rem;
+            margin: 0;
+            background-repeat: no-repeat;
+            background-position: right center;
+            background-size: 10px;
+        }
+
+        /* Color-coded arrows */
+        .meta-pill.sev-high select, .meta-pill.pri-p0 select, .meta-pill.pri-p1 select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23f87171' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'%3E%3C/path%3E%3C/svg%3E");
+        }
+        .meta-pill.sev-med select, .meta-pill.pri-p2 select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23fbbf24' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'%3E%3C/path%3E%3C/svg%3E");
+        }
+        .meta-pill.sev-low select, .meta-pill.pri-p3 select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2360a5fa' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'%3E%3C/path%3E%3C/svg%3E");
+        }
+
+        [data-theme="light"] .meta-pill select {
+            /* Inherit color-coded background-image from parent classes */
+        }
+
+        .meta-pill select option {
+            background: var(--card-bg);
+            color: var(--text-mid);
+        }
+
+        .img-box {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            padding: 8px;
+            border-radius: 16px;
+            cursor: zoom-in;
+            transition: all 0.3s ease;
+        }
+
+        .img-box:hover {
+            border-color: var(--accent);
+            transform: scale(1.05);
+        }
+
+        .evidence-img {
+            width: 180px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 10px;
+            display: block;
+        }
+
+        .heuristic-label {
+            color: var(--danger);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 0.8rem;
+            display: block;
+        }
+
+        .issue-desc {
+            font-size: 1.55rem;
+            font-weight: 600;
+            line-height: 1.2;
+            margin: 0 0 1.5rem 0;
+            letter-spacing: -0.02em;
+            color: var(--text-mid);
+        }
+
+        .rec-box {
+            background: rgba(124, 110, 242, 0.08);
+            border-left: 4px solid var(--accent);
+            padding: 1.5rem;
+            border-radius: 4px 16px 16px 4px;
+            margin-bottom: 1.5rem;
+        }
+
+        .rec-label {
+            color: var(--accent);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .rec-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            line-height: 1.5;
+            color: var(--text-mid);
+        }
+
+        .insights-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .insight-card {
+            background: var(--glass);
+            padding: 1.2rem;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .insight-header {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .insight-body {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-mid);
+        }
+
+        /* --- Lightbox --- */
+        #lightbox {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(20px);
+        }
+
+        #lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 12px;
+            box-shadow: 0 0 50px var(--accent-glow);
+        }
+
+        /* --- Toast --- */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--accent);
+            color: #fff;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none;
+            z-index: 10001;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .main-footer {
+            margin-top: 2.5rem;
+            padding-bottom: 2rem;
+            display: flex;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .footer-badge .badge {
+            font-size: 0.55rem;
+            font-weight: 500;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text);
+            transition: all 0.3s ease;
+            cursor: default;
+            opacity: 0.35;
+            background: none;
+            border: none;
+            padding: 0;
+            height: auto;
+            border-radius: 0;
+        }
+
+        .footer-badge .badge:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        /* --- Bottom Sheet (Mobile Only) --- */
+        .bottom-sheet-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 10002;
+            display: none;
+            align-items: flex-end;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .bottom-sheet-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .bottom-sheet {
+            width: 100%;
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+            border-radius: 24px 24px 0 0;
+            padding: 2rem 1.5rem 3.5rem;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+            box-sizing: border-box;
+        }
+
+        .bottom-sheet-overlay.active .bottom-sheet {
+            transform: translateY(0);
+        }
+
+        .sheet-handle {
+            width: 40px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 100px;
+            margin: 0 auto 1.5rem;
+        }
+
+        /* Desktop Modal Overrides */
+        @media (min-width: 769px) {
+            .bottom-sheet-overlay {
+                align-items: center;
+                justify-content: center;
+            }
+            .bottom-sheet {
+                width: 450px;
+                border-radius: 24px;
+                transform: scale(0.9);
+                border: 1px solid var(--border);
+                padding: 2.5rem;
+            }
+            .bottom-sheet-overlay.active .bottom-sheet {
+                transform: scale(1);
+            }
+            .sheet-handle { display: none; }
+        }
+
+        /* Picker Option Colors */
+        .sheet-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1.5px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 0.8rem;
+            text-align: left;
+        }
+
+        .sheet-option.active {
+            border-color: var(--accent);
+            background: rgba(124, 110, 242, 0.05);
+            box-shadow: 0 4px 15px rgba(124, 110, 242, 0.1);
+        }
+
+        .option-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .option-name {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #fff;
+        }
+
+        .option-desc {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            line-height: 1.4;
+        }
+
+        .option-check {
+            color: var(--accent);
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .sheet-option.high .option-name { color: #f87171 !important; }
+        .sheet-option.med .option-name { color: #fbbf24 !important; }
+        .sheet-option.low .option-name { color: #60a5fa !important; }
+
+        [data-theme="light"] .sheet-option {
+            background: #fff;
+            border: 1.5px solid rgba(0,0,0,0.08);
+        }
+        [data-theme="light"] .option-name { color: #000; }
+
+        /* --- Mobile Responsiveness --- */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header {
+                flex-direction: column-reverse;
+                gap: 16px !important;
+                padding: 1.5rem 0;
+                text-align: center;
+            }
+
+            .brand-info h1 {
+                font-size: 2rem;
+                margin: 0.5rem 0;
+            }
+
+            .issues-badge {
+                margin: 0 !important;
+                padding: 0.4rem 0.8rem !important;
+                font-size: 0.75rem !important;
+            }
+
+            .audit-id {
+                font-size: 0.65rem !important;
+                opacity: 0.5;
+                letter-spacing: 0.2em;
+            }
+
+            .header-actions {
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0 1rem;
+                gap: 0.5rem;
+            }
+
+            .main-footer {
+                margin-top: 4rem;
+                padding-bottom: 3rem;
+            }
+
+            .footer-extra { display: none; }
+
+            .header-actions .btn:first-child {
+                order: 0 !important;
+            }
+
+            .header-actions #themeBtn {
+                order: 5 !important;
+            }
+
+            .btn {
+                height: 46px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex: none;
+                transition: all 0.2s ease;
+            }
+            
+            .btn:not(#shareBtn):not(#downloadBtn):not(#saveBtn) {
+                width: 46px;
+                padding: 0;
+                border-radius: 12px !important;
+                font-size: 0 !important;
+                background: var(--card-bg);
+                border: 1px solid var(--border);
+            }
+
+            .header:not(.scrolled) .header-actions #stickyShareBtn, 
+            .header:not(.scrolled) .header-actions #stickyDownloadBtn {
+                display: none !important;
+            }
+
+            .meta-pill select {
+                pointer-events: none !important;
+            }
+
+            .controls-row #shareBtn, .controls-row #downloadBtn {
+                flex: 1 !important;
+                padding: 0 0.8rem !important;
+                font-size: 0.85rem !important;
+                font-weight: 700 !important;
+                border-radius: 12px !important;
+                gap: 0.5rem;
+                background: var(--card-bg) !important;
+                border: 1px solid var(--border) !important;
+                color: var(--text-mid) !important;
+                height: 48px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            #downloadBtn svg, #shareBtn svg, #saveBtn svg {
+                flex-shrink: 0;
+                width: 18px;
+                height: 18px;
+            }
+
+            [data-theme="light"] .btn {
+                background: #ffffff !important;
+                color: #000000 !important;
+                border: 1px solid rgba(0,0,0,0.1) !important;
+            }
+
+            #stickyShareBtn, #stickyDownloadBtn {
+                display: none !important;
+            }
+
+            .usage-metadata {
+                justify-content: center !important;
+                text-align: center;
+                border-top: none !important;
+                margin-top: 2rem !important;
+            }
+
+            .ai-engine-info {
+                display: none !important;
+            }
+
+            .usage-info {
+                background: rgba(255, 255, 255, 0.05) !important;
+                width: 100% !important;
+                padding: 0.8rem 1rem !important;
+                border-radius: 12px !important;
+                display: flex !important;
+                justify-content: space-between !important;
+                gap: 1rem !important;
+                box-sizing: border-box;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            [data-theme="light"] .usage-info {
+                background: rgba(0, 0, 0, 0.03) !important;
+                border: 1px solid rgba(0, 0, 0, 0.05);
+            }
+
+            .controls-row {
+                margin-bottom: 20px !important;
+                width: 100%;
+            }
+
+            .controls-row .header-actions {
+                display: flex !important;
+                flex-direction: row !important;
+                width: 100% !important;
+                gap: 0.8rem !important;
+                padding: 0 !important;
+            }
+
+            .view-toggle, .spreadsheet-container {
+                display: none !important;
+            }
+
+            #cardsView {
+                display: flex !important;
+                flex-direction: column;
+                gap: 1.5rem;
+                width: 100%;
+            }
+
+            .report-card {
+                padding: 1.25rem !important;
+                border-radius: 20px !important;
+                width: 100% !important;
+                margin: 0 !important;
+                box-sizing: border-box;
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 16px !important; /* Force 16px gap between all children */
+            }
+
+            .card-header {
+                flex-direction: column !important;
+                gap: 16px !important;
+                align-items: center !important;
+                width: 100% !important;
+                margin: 0 !important;
+            }
+
+            .heuristic-label, .issue-desc, .insights-split, .rec-box, .usage-metadata {
+                margin: 0 !important; /* Rely on parent gap */
+            }
+
+            .issue-desc {
+                font-size: 1.25rem !important;
+                line-height: 1.4 !important;
+            }
+
+            .badge-stack {
+                width: 100% !important;
+            }
+
+            .card-meta {
+                display: flex !important;
+                width: 100% !important;
+                gap: 0.75rem !important;
+                justify-content: stretch !important;
+            }
+
+            .meta-pill {
+                flex: 1 !important;
+                width: 100% !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                padding: 0 1rem !important;
+                height: 52px !important;
+                border-radius: 14px !important;
+                background: rgba(255,255,255,0.06) !important;
+                border: 1px solid rgba(255,255,255,0.1) !important;
+                position: relative;
+                font-weight: 800 !important;
+                box-sizing: border-box !important;
+            }
+
+            /* Semantic variables for mobile triggers */
+            .meta-pill.sev-high, .meta-pill.pri-p1 {
+                background: var(--sev-high-bg) !important;
+                border: 1px solid rgba(239, 68, 68, 0.3) !important;
+                color: var(--sev-high) !important;
+            }
+            .meta-pill.sev-med, .meta-pill.pri-p2 {
+                background: var(--sev-med-bg) !important;
+                border: 1px solid rgba(245, 158, 11, 0.3) !important;
+                color: var(--sev-med) !important;
+            }
+            .meta-pill.sev-low, .meta-pill.pri-p3 {
+                background: var(--sev-low-bg) !important;
+                border: 1px solid rgba(59, 130, 246, 0.3) !important;
+                color: var(--sev-low) !important;
+            }
+
+            .meta-pill::after {
+                content: '⌄';
+                font-size: 1.1rem;
+                opacity: 1 !important;
+                font-weight: 800;
+                line-height: 1;
+                margin-top: -4px;
+                color: inherit;
+            }
+
+            .meta-pill span {
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+            }
+
+            .evidence-img {
+                width: 100% !important;
+                height: auto !important;
+                max-height: 220px;
+                object-fit: cover;
+                border-radius: 12px;
+            }
+
+            .insights-split {
+                grid-template-columns: 1fr !important;
+                gap: 1rem !important;
+            }
+
+            .issue-desc {
+                font-size: 1.25rem !important;
+                line-height: 1.4 !important;
+                margin-bottom: 1.2rem !important;
+            }
+
+            .rec-text {
+                font-size: 0.95rem !important;
+                line-height: 1.5 !important;
+            }
+
+            .insight-body {
+                font-size: 0.9rem !important;
+                line-height: 1.5 !important;
+            }
+
+            .heuristic-label {
+                font-size: 0.7rem !important;
+            }
+
+            /* Compact Scroll Header */
+            .header.scrolled {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                padding: 0.75rem 1rem !important;
+                gap: 0.5rem !important;
+                background: rgba(10, 10, 15, 0.98) !important;
+                backdrop-filter: blur(20px);
+                border-bottom: 1px solid var(--border);
+            }
+
+            [data-theme="light"] .header.scrolled {
+                background: rgba(255, 255, 255, 0.95) !important;
+                border-bottom: 1px solid rgba(0,0,0,0.1);
+            }
+
+            [data-theme="light"] .header.scrolled .brand-info h1 {
+                color: #000000 !important;
+            }
+
+            .header.scrolled .brand-info .audit-id,
+            .header.scrolled .issues-badge {
+                display: none !important;
+            }
+
+            .header.scrolled .brand-info h1 {
+                font-size: 1.25rem !important;
+                margin: 0 !important;
+            }
+
+            .header.scrolled .header-actions {
+                width: auto !important;
+                gap: 0.5rem !important;
+                padding: 0 !important;
+                flex: none;
+            }
+
+            .header.scrolled .header-actions .btn:not(#shareBtn):not(#downloadBtn) {
+                display: none !important;
+            }
+
+            .header.scrolled #shareBtn, .header.scrolled #downloadBtn {
+                height: 38px !important;
+                padding: 0 0.8rem !important;
+                font-size: 0.75rem !important;
+                flex: none !important;
+                width: auto !important;
+            }
+        }
+        }
+
+    </style>
+    <script>
+        // Theme Initialization - Run immediately to prevent flash
+        (function initTheme() {
+            const saved = localStorage.getItem('ux-audit-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+        })();
+    </script>
+</head>
+<body>
+
+    <div class="bg-grid"></div>
+
+    <div class="container">
+        <header class="header" id="mainHeader">
+            <div class="brand-info">
+                <span class="audit-id">Report ID: {{ task_id[:8] }}...</span>
+                <div style="display: flex; align-items: center; gap: 1.5rem;">
+                    <h1>{{ brand }}</h1>
+                    <span class="issues-badge" style="background: #ef4444; color: #fff; padding: 0.5rem 1.2rem; border-radius: 8px; font-weight: 700; font-size: 0.9rem; letter-spacing: 0.05em; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">
+                        {{ issues|length }} ISSUES
+                    </span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-icon" onclick="window.location.href='/'" title="Dashboard">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                </button>
+                
+                <button class="btn" id="stickyShareBtn" onclick="shareReport()" title="Share Report">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+                    <span>Share</span>
+                </button>
+                <button class="btn" id="stickyDownloadBtn" onclick="downloadCSV()" title="Download CSV">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    <span>Download</span>
+                </button>
+                <button class="btn btn-primary" id="saveBtn" onclick="saveAllChanges()" style="display: none;" title="Save Changes">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                </button>
+
+                <button class="btn theme-toggle btn-icon" onclick="toggleTheme()" id="themeBtn" title="Toggle Theme">
+                    <svg class="sun-icon" style="display:none; width: 20px; height: 20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <svg class="moon-icon" style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="controls-row">
+            <div class="view-toggle">
+                <div class="toggle-btn active" onclick="switchView('cards', this)">Cards View</div>
+                <div class="toggle-btn" onclick="switchView('spreadsheet', this)">Spreadsheet View</div>
+            </div>
+            <div class="header-actions">
+                <button class="btn" id="shareBtn" onclick="shareReport()" title="Share Report">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+                    <span>Share</span>
+                </button>
+                <button class="btn" id="downloadBtn" onclick="downloadCSV()" title="Download CSV">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    <span>Download</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Cards View -->
+        <div id="cardsView" class="cards-container">
+            {% for issue in issues %}
+            <article class="report-card" data-index="{{ loop.index0 }}">
+                <div class="card-header">
+                    {% if issue.Screenshot %}
+                    <div class="img-box" onclick="zoom('{{ issue.Screenshot }}')">
+                        <img src="{{ issue.Screenshot }}" class="evidence-img">
+                    </div>
+                    {% endif %}
+                    
+                    <div class="badge-stack">
+                        <div class="card-meta">
+                            {% set sev = issue.Severity|string %}
+                            <div class="meta-pill {% if sev in ['4','5'] %}sev-high{% elif sev == '3' %}sev-med{% else %}sev-low{% endif %}" onclick="openPickerSheet({{ loop.index0 }}, 'Severity', this, this.querySelector('select'))">
+                                <span>Severity</span>
+                                <select class="severity-select" onchange="updateLocalIssue({{ loop.index0 }}, 'Severity', this.value, this.parentElement)">
+                                    <option value="1" {% if sev == '1' %}selected{% endif %}>1</option>
+                                    <option value="2" {% if sev == '2' %}selected{% endif %}>2</option>
+                                    <option value="3" {% if sev == '3' %}selected{% endif %}>3</option>
+                                    <option value="4" {% if sev == '4' %}selected{% endif %}>4</option>
+                                    <option value="5" {% if sev == '5' %}selected{% endif %}>5</option>
+                                </select>
+                            </div>
+                            {% set pri = issue.Priority|upper %}
+                            <div class="meta-pill {% if pri in ['P0','P1'] %}pri-p1{% elif pri == 'P2' %}pri-p2{% else %}pri-p3{% endif %}" onclick="openPickerSheet({{ loop.index0 }}, 'Priority', this, this.querySelector('select'))">
+                                <span>Priority</span>
+                                <select class="priority-select" onchange="updateLocalIssue({{ loop.index0 }}, 'Priority', this.value, this.parentElement)">
+                                    <option value="P0" {% if pri == 'P0' %}selected{% endif %}>P0</option>
+                                    <option value="P1" {% if pri == 'P1' %}selected{% endif %}>P1</option>
+                                    <option value="P2" {% if pri == 'P2' %}selected{% endif %}>P2</option>
+                                    <option value="P3" {% if pri == 'P3' %}selected{% endif %}>P3</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <span class="heuristic-label">Heuristic: {{ issue.Heuristic }}</span>
+                <h2 class="issue-desc">{{ issue['Issue Description'] }}</h2>
+
+                <div class="insights-split">
+                    <div class="insight-card">
+                        <div class="insight-header"><span>🧠</span> Behavioral</div>
+                        <div class="insight-body">{{ issue['Behavioral Insight'] }}</div>
+                    </div>
+                    <div class="insight-card">
+                        <div class="insight-header"><span>💬</span> Attitudinal</div>
+                        <div class="insight-body">{{ issue['Attitudinal Insight'] }}</div>
+                    </div>
+                </div>
+
+                <div class="rec-box" style="margin-top: 1.5rem;">
+                    <div class="rec-label"><span>💡</span> Strategic Recommendation</div>
+                    <div class="rec-text">{{ issue.Recommendation }}</div>
+                </div>
+
+                <div class="usage-metadata" style="margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-family: 'JetBrains Mono'; font-size: 0.7rem; color: var(--text-dim); opacity: 0.7;">
+                    <div class="ai-engine-info">AI Engine: {{ issue.Model }}</div>
+                    <div class="usage-info" style="display: flex; gap: 1rem;">
+                        <span>Tokens: {{ issue.Tokens }}</span>
+                        <span>Est. Cost: ₹{{ issue['Cost (Rs)'] }}</span>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+
+        <!-- Spreadsheet View -->
+        <div id="spreadsheetView" class="spreadsheet-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Visual</th>
+                        <th>Severity</th>
+                        <th>Priority</th>
+                        <th>Heuristic</th>
+                        <th>Issue Description</th>
+                        <th>Recommendation</th>
+                        <th>Tokens</th>
+                        <th>Cost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for issue in issues %}
+                    <tr>
+                        <td>
+                            {% if issue.Screenshot %}
+                            <img src="{{ issue.Screenshot }}" class="row-screenshot" onclick="zoom('{{ issue.Screenshot }}')">
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <select class="editable-select" onchange="updateLocalIssue({{ loop.index0 }}, 'Severity', this.value)">
+                                <option value="1" {% if issue.Severity|string == '1' %}selected{% endif %}>1</option>
+                                <option value="2" {% if issue.Severity|string == '2' %}selected{% endif %}>2</option>
+                                <option value="3" {% if issue.Severity|string == '3' %}selected{% endif %}>3</option>
+                                <option value="4" {% if issue.Severity|string == '4' %}selected{% endif %}>4</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select class="editable-select" onchange="updateLocalIssue({{ loop.index0 }}, 'Priority', this.value)">
+                                <option value="P1" {% if issue.Priority == 'P1' %}selected{% endif %}>P1</option>
+                                <option value="P2" {% if issue.Priority == 'P2' %}selected{% endif %}>P2</option>
+                                <option value="P3" {% if issue.Priority == 'P3' %}selected{% endif %}>P3</option>
+                            </select>
+                        </td>
+                        <td style="font-family:'JetBrains Mono'; font-size:0.85rem; font-weight:600; color:var(--danger);">{{ issue.Heuristic }}</td>
+                        <td style="font-weight:600;">{{ issue['Issue Description'] }}</td>
+                        <td style="color:var(--text-mid); font-size:0.8rem;">{{ issue.Recommendation }}</td>
+                        <td style="font-family:'JetBrains Mono'; font-size:0.75rem; color:var(--text-dim);">{{ issue.Tokens }}</td>
+                        <td style="font-family:'JetBrains Mono'; font-size:0.75rem; color:var(--text-dim);">{{ issue['Cost (Rs)'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <footer class="main-footer">
+            <div class="footer-badge">
+                <span class="badge">© 2026 UX AUDIT ENGINE. <span class="footer-extra">• PUBLIC DOMAIN HEURISTIC ANALYSIS</span></span>
+            </div>
+        </footer>
+    </div>
+
+    <div id="lightbox" onclick="this.style.display='none'">
+        <img id="lightbox-img">
+    </div>
+
+    <!-- Share Modal (Bottom Sheet on Mobile) -->
+    <div id="shareModalOverlay" class="bottom-sheet-overlay" onclick="closeShareModal()">
+        <div class="bottom-sheet" onclick="event.stopPropagation()">
+            <div class="sheet-handle"></div>
+            <div style="position:absolute; top:1.5rem; right:1.5rem; cursor:pointer; font-size:1.5rem; color:var(--text-dim);" onclick="closeShareModal()">×</div>
+            <h3 style="margin-top:0; font-size:1.5rem; margin-bottom:0.5rem; color: #fff;">Share Report</h3>
+            <p style="color:var(--text-dim); font-size:0.9rem; margin-bottom:2rem;">Invite stakeholders via email or copy the secure link.</p>
+            
+            <div style="display:flex; gap:0.8rem; margin-bottom:1.5rem;">
+                <input type="text" id="shareEmail" placeholder="colleague@company.com" style="flex:1; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:#fff; padding:0.8rem 1rem; border-radius:10px; font-family:inherit; outline:none;">
+                <button class="btn btn-primary" id="inviteBtn" onclick="sendInvitation()" style="padding:0.8rem 1.2rem;">Invite</button>
+            </div>
+            
+            <div style="border-top:1px solid var(--border); padding-top:1.5rem;">
+                <button class="btn" style="width:100%; justify-content:center; gap:0.8rem;" id="copyLinkBtn" onclick="copyShareLink()">
+                    <span>🔗</span> Copy Secure Link
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Picker Bottom Sheet (Mobile Only) -->
+    <div id="pickerBottomSheet" class="bottom-sheet-overlay" onclick="closePickerSheet()">
+        <div class="bottom-sheet" onclick="event.stopPropagation()">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <h3 id="pickerTitle" style="color: #fff; margin-bottom: 0.5rem;">Select Value</h3>
+                <p id="pickerDesc" style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 2rem;">Choose a level for this issue</p>
+            </div>
+            <div id="pickerOptions" class="sheet-options">
+                <!-- Options injected via JS -->
+            </div>
+        </div>
+    </div>
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        let auditData = {
+            issues: {{ issues|tojson }}
+        };
+        const taskId = "{{ task_id }}";
+        let lastShareUrl = null;
+
+        // Sync Theme Icons
+        (function syncThemeIcons() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const isLight = current === 'light';
+            const sun = document.querySelector('.sun-icon');
+            const moon = document.querySelector('.moon-icon');
+            if (sun && moon) {
+                sun.style.display = isLight ? 'block' : 'none';
+                moon.style.display = isLight ? 'none' : 'block';
+            }
+        })();
+
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const target = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', target);
+            localStorage.setItem('ux-audit-theme', target);
+            
+            const isLight = target === 'light';
+            document.querySelector('.sun-icon').style.display = isLight ? 'block' : 'none';
+            document.querySelector('.moon-icon').style.display = isLight ? 'none' : 'block';
+        }
+
+        // Sticky Header & Scroll Logic
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('mainHeader');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+
+            // Keep desktop sticky logic
+            const controlsRow = document.querySelector('.controls-row');
+            const stickyShare = document.getElementById('stickyShareBtn');
+            const stickyDownload = document.getElementById('stickyDownloadBtn');
+            if (controlsRow && stickyShare && stickyDownload) {
+                const rect = controlsRow.getBoundingClientRect();
+                const isPastControls = rect.top < 0;
+                stickyShare.style.display = isPastControls ? 'flex' : 'none';
+                stickyDownload.style.display = isPastControls ? 'flex' : 'none';
+            }
+        });
+
+        function downloadCSV() {
+            const link = document.createElement('a');
+            link.href = `/download_report/{{ task_id }}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function switchView(view, btn) {
+            document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            if (view === 'cards') {
+                document.getElementById('cardsView').classList.remove('hidden');
+                document.getElementById('spreadsheetView').classList.remove('active');
+            } else {
+                document.getElementById('cardsView').classList.add('hidden');
+                document.getElementById('spreadsheetView').classList.add('active');
+            }
+        }
+
+        function zoom(src) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox').style.display = 'flex';
+        }
+
+        function updateLocalIssue(index, field, value, pillElement) {
+            auditData.issues[index][field] = value;
+            // Show Save button when changes occur
+            document.getElementById('saveBtn').style.display = 'flex';
+            
+            // Update Pill Color
+            if (pillElement) {
+                pillElement.classList.remove('sev-high', 'sev-med', 'sev-low', 'pri-p1', 'pri-p2', 'pri-p3');
+                if (field === 'Severity') {
+                    if (['4','5'].includes(value)) pillElement.classList.add('sev-high');
+                    else if (value === '3') pillElement.classList.add('sev-med');
+                    else pillElement.classList.add('sev-low');
+                } else if (field === 'Priority') {
+                    const pri = value.toUpperCase();
+                    if (['P0','P1'].includes(pri)) pillElement.classList.add('pri-p1');
+                    else if (pri === 'P2') pillElement.classList.add('pri-p2');
+                    else pillElement.classList.add('pri-p3');
+                }
+            }
+
+            // Also sync the other view's select if they exist
+            const cardSelect = document.querySelector(`.report-card[data-index="${index}"] .${field.toLowerCase()}-select`);
+            if (cardSelect && cardSelect.parentElement !== pillElement) {
+                cardSelect.value = value;
+                // Recursive call to update the OTHER view's pill color (without infinite loop since cardSelect.parentElement !== pillElement check)
+                updateLocalIssue(index, field, value, cardSelect.parentElement);
+            }
+        }
+
+        function shareReport() {
+            const overlay = document.getElementById('shareModalOverlay');
+            overlay.style.display = 'flex';
+            setTimeout(() => overlay.classList.add('active'), 10);
+        }
+
+        function closeShareModal() {
+            const overlay = document.getElementById('shareModalOverlay');
+            overlay.classList.remove('active');
+            setTimeout(() => overlay.style.display = 'none', 400);
+        }
+
+        // --- Bottom Sheet Picker Logic ---
+        let currentPickerTarget = null;
+
+        function openPickerSheet(index, field, pillElement, selectElement) {
+            if (window.innerWidth > 768) return;
+            
+            currentPickerTarget = { index, field, pillElement, selectElement };
+            const title = document.getElementById('pickerTitle');
+            const desc = document.getElementById('pickerDesc');
+            const optionsContainer = document.getElementById('pickerOptions');
+            
+            title.innerText = `Select ${field}`;
+            desc.innerText = `Choose a ${field.toLowerCase()} level for this issue`;
+            optionsContainer.innerHTML = '';
+            
+            const options = Array.from(selectElement.options).map(o => ({ value: o.value, text: o.text }));
+            const currentValue = selectElement.value;
+
+            const descriptions = {
+                'Severity': {
+                    '5': 'Critical Blocker - Prevents task completion',
+                    '4': 'Major Issue - Significant user frustration',
+                    '3': 'Moderate - Notable usability hurdle',
+                    '2': 'Minor - Cosmetic or trivial friction',
+                    '1': 'Minimal - Very low impact on UX'
+                },
+                'Priority': {
+                    'P0': 'Urgent - Fix immediately (Blocker)',
+                    'P1': 'High - Fix in the next sprint',
+                    'P2': 'Medium - Regular backlog item',
+                    'P3': 'Low - Long-term improvement'
+                }
+            };
+            
+            options.forEach(opt => {
+                const div = document.createElement('div');
+                let colorClass = '';
+                let displayText = opt.text;
+                let subText = descriptions[field][opt.value] || '';
+
+                if (field === 'Severity') {
+                    displayText = `Severity ${opt.value}`;
+                    if (['4','5'].includes(opt.value)) colorClass = 'high';
+                    else if (opt.value === '3') colorClass = 'med';
+                    else colorClass = 'low';
+                } else if (field === 'Priority') {
+                    if (['P0','P1'].includes(opt.value)) colorClass = 'high';
+                    else if (opt.value === 'P2') colorClass = 'med';
+                    else colorClass = 'low';
+                }
+
+                div.className = `sheet-option ${colorClass} ${opt.value === currentValue ? 'active' : ''}`;
+                div.innerHTML = `
+                    <div class="option-info">
+                        <span class="option-name">${displayText}</span>
+                        <span class="option-desc">${subText}</span>
+                    </div>
+                    ${opt.value === currentValue ? '<div class="option-check">✓</div>' : ''}
+                `;
+                div.onclick = () => selectPickerValue(opt.value);
+                optionsContainer.appendChild(div);
+            });
+            
+            const overlay = document.getElementById('pickerBottomSheet');
+            overlay.style.display = 'flex';
+            setTimeout(() => overlay.classList.add('active'), 10);
+        }
+
+        function selectPickerValue(val) {
+            const { index, field, pillElement, selectElement } = currentPickerTarget;
+            selectElement.value = val;
+            updateLocalIssue(index, field, val, pillElement);
+            closePickerSheet();
+        }
+
+        function closePickerSheet() {
+            const overlay = document.getElementById('pickerBottomSheet');
+            overlay.classList.remove('active');
+            setTimeout(() => overlay.style.display = 'none', 400);
+        }
+
+        async function sendInvitation() {
+            const email = document.getElementById('shareEmail').value;
+            if (!email || !email.includes('@')) {
+                alert("Please enter a valid email address.");
+                return;
+            }
+
+            const btn = document.getElementById('inviteBtn');
+            const originalText = btn.textContent;
+            btn.textContent = "Sending...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/share', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: email,
+                        audit_data: {
+                            brand: {{ brand|tojson }},
+                            url: {{ url|tojson }},
+                            issues: auditData.issues
+                        }
+                    })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    lastShareUrl = data.share_url;
+                    showToast("Invitation sent!");
+                    document.getElementById('shareEmail').value = '';
+                    closeShareModal();
+                } else {
+                    alert("Share failed: " + data.message);
+                }
+            } catch (err) {
+                alert("Error: " + err.message);
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function copyShareLink() {
+            // If we don't have a share link yet, create one silently
+            if (!lastShareUrl) {
+                const btn = document.getElementById('copyLinkBtn');
+                btn.textContent = "Generating Link...";
+                try {
+                    const res = await fetch('/api/share', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            audit_data: {
+                                brand: {{ brand|tojson }},
+                                url: {{ url|tojson }},
+                                issues: auditData.issues
+                            }
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.status === 'success') {
+                        lastShareUrl = data.share_url;
+                    }
+                } catch (e) {}
+                btn.textContent = "🔗 Copy Secure Link";
+            }
+
+            if (lastShareUrl) {
+                navigator.clipboard.writeText(lastShareUrl).then(() => {
+                    showToast("Link copied to clipboard!");
+                    setTimeout(closeShareModal, 800);
+                });
+            } else {
+                alert("Could not generate share link.");
+            }
+        }
+
+        async function saveAllChanges() {
+            const btn = document.getElementById('saveBtn');
+            const originalText = btn.textContent;
+            btn.textContent = "Saving...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`/update_results/${taskId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ issues: auditData.issues })
+                });
+
+                if (res.ok) {
+                    showToast("Changes synced to database.");
+                    document.getElementById('saveBtn').style.display = 'none';
+                } else {
+                    alert("Failed to save changes.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Error saving: " + err.message);
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
+    </script>
+</body>
+</html>

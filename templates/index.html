@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UX Audit Engine — Public Domain Heuristic Evaluator</title>
+  <meta name="description" content="AI-Powered UX Heuristic Audit. Deep structural analysis based on Nielsen's 10 Heuristics. Professional-grade insights for senior designers and product teams.">
+  
+  <!-- Social Media Previews (OpenGraph) -->
+  <meta property="og:title" content="UX Audit AI — Professional Heuristic Evaluator">
+  <meta property="og:description" content="Deep structural UX audits powered by vision AI. Transform your interface with Nielsen-based heuristic analysis.">
+  <meta property="og:image" content="/static/screenshots/hero_preview.png">
+  <meta property="og:type" content="website">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/static/style.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◈</text></svg>">
+  <script>
+    (function() {
+      const saved = localStorage.getItem('ux-audit-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', saved);
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- Background Grid -->
+  <div class="bg-grid"></div>
+
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <svg class="logo-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L22 12L12 22L2 12L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M12 7L17 12L12 17L7 12L12 7Z" fill="currentColor"/>
+        </svg>
+        <span class="logo-text">UX<span class="accent">Audit</span>.public</span>
+      </div>
+      <div class="header-actions">
+        <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
+          <!-- Sun Icon SVG -->
+          <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <!-- Moon Icon SVG -->
+          <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell">
+
+    <!-- Hero -->
+    <section class="hero">
+      <p class="hero-label">NIELSEN'S 10 HEURISTICS ENGINE</p>
+      <h1 class="hero-title">Public Domain<br/>UX Heuristic Audit</h1>
+      <p class="hero-sub"><span>Deep Structural Audit:</span> <span>Silicon Valley Level Analysis</span></p>
+    </section>
+
+    <!-- Input Card -->
+    <div class="card input-card" id="inputCard">
+      <div class="input-stack">
+        <div class="input-row">
+          <div class="url-wrap model-api-row">
+            <div class="model-selector-inner" onclick="openModelSheet()">
+              <select id="providerSelect" class="provider-select" onchange="updatePlaceholder()">
+                <option value="gemini" selected>Gemini</option>
+                <option value="openai">GPT-4o</option>
+                <option value="anthropic">Claude</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <span class="url-prefix">🔑</span>
+              <input
+                id="apiKeyInput"
+                type="password"
+                placeholder="Enter Gemini API Key"
+                autocomplete="off"
+                spellcheck="false"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="url-wrap">
+            <div class="input-group">
+              <span class="url-prefix">🌐</span>
+              <input
+                id="urlInput"
+                type="url"
+                placeholder="https://www.yourwebsite.com"
+                autocomplete="off"
+                spellcheck="false"
+              />
+            </div>
+            <button id="runBtn" onclick="handleAction()">
+              <span id="btnText">Run Audit</span>
+              <span id="btnArrow">→</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="url-examples">
+        <span>Try:</span>
+        <button class="ex-btn" onclick="fillUrl('https://www.swiggy.com')">swiggy.com</button>
+        <button class="ex-btn" onclick="fillUrl('https://www.zomato.com')">zomato.com</button>
+        <button class="ex-btn" onclick="fillUrl('https://www.flipkart.com')">flipkart.com</button>
+        <button class="ex-btn" onclick="fillUrl('https://www.nykaa.com')">nykaa.com</button>
+      </div>
+    </div>
+
+    <!-- Status / Progress Card (HUD) -->
+    <div class="card status-card" id="statusCard" style="display:none;">
+      <!-- Row 1: Header with Title and Controls -->
+      <div class="status-header-row">
+        <div class="status-header-left">
+          <div class="status-dot"></div>
+          <h2 class="status-main-title">Agentic Audit Pipeline</h2>
+          <span class="status-brand-tag" id="statusBrand"></span>
+        </div>
+        <div class="status-header-right">
+          <button id="viewVisionBtn" class="btn-portal-toggle" onclick="openPortal()" style="display: none;">View Vision</button>
+          <button id="activeCancelBtn" class="btn-cancel" onclick="cancelAudit()">Cancel Audit</button>
+        </div>
+      </div>
+
+      <!-- Mid-Section: Progress Bar Divider -->
+      <div class="status-progress-divider">
+        <div class="progress-bar-wrap">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+      </div>
+
+      <!-- Row 2: Two Columns (Pipeline and Logs) -->
+      <div class="status-split-row">
+        <!-- Left Column: Pipeline -->
+        <div class="pipeline-column">
+          <div class="panel-label">AGENTIC PIPELINE</div>
+          <div class="pipeline-list" id="pipelineList">
+            <div class="pipeline-item" id="task-handshake">
+              <div class="task-icon">◌</div>
+              <div class="task-info">
+                <span class="task-name">AI Handshake</span>
+                <span class="task-status">Pending</span>
+              </div>
+            </div>
+            <div class="pipeline-item" id="task-discovery">
+              <div class="task-icon">◌</div>
+              <div class="task-info">
+                <span class="task-name">Visual Discovery</span>
+                <span class="task-status">Pending</span>
+              </div>
+            </div>
+            <div class="pipeline-item" id="task-synthesis">
+              <div class="task-icon">◌</div>
+              <div class="task-info">
+                <span class="task-name">Imagery Synthesis</span>
+                <span class="task-status">Pending</span>
+              </div>
+            </div>
+            <div class="pipeline-item" id="task-intelligence">
+              <div class="task-icon">◌</div>
+              <div class="task-info">
+                <span class="task-name">UX Intelligence</span>
+                <span class="task-status">Pending</span>
+              </div>
+            </div>
+            <div class="pipeline-item" id="task-report">
+              <div class="task-icon">◌</div>
+              <div class="task-info">
+                <span class="task-name">Report Engine</span>
+                <span class="task-status">Pending</span>
+              </div>
+            </div>
+            <div class="pipeline-item" id="task-sync">
+              <div class="task-icon">◌</div>
+              <div class="task-info">
+                <span class="task-name">Cloud Harmony</span>
+                <span class="task-status">Pending</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Logs -->
+        <div class="terminal-column">
+          <div class="panel-label">AGENT LOG</div>
+          <div class="terminal" id="terminal">
+            <div class="terminal-line" id="statusMsg">Initializing Agent Systems...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Audit History Section -->
+    <div class="card history-card" id="historyCard">
+      <div class="history-header">
+        <span class="history-title">RECENT AUDITS (<span id="historyCount">0</span>)</span>
+        <div id="paginationContainer" class="pagination-wrap"></div>
+      </div>
+      <div class="history-list" id="historyList">
+        <!-- Mocked items will go here -->
+        <div class="history-empty">No previous audits found</div>
+      </div>
+    </div>
+
+    <!-- Result Panel (hidden by default) -->
+    <div id="resultPanel" style="display:none;">
+      <div class="result-header">
+        <h2>✅ Audit Complete</h2>
+        <p id="resultSummary"></p>
+      </div>
+      <div class="result-grid" id="resultGrid"></div>
+    </div>
+
+    <!-- Error Panel -->
+    <div class="card error-card" id="errorCard" style="display:none;">
+      <span class="error-icon">⚠️</span>
+      <p id="errorMsg"></p>
+      <button onclick="resetUI()">Try Again</button>
+    </div>
+
+  </div><!-- /shell -->
+
+  <!-- Modal System Overlays -->
+  <div class="modal-overlay" id="modalOverlay" style="display:none;">
+    
+    <!-- Share Modal -->
+    <div class="modal card" id="shareModal" style="display:none;">
+      <div class="modal-close" onclick="closeModal()">×</div>
+      <h3>Share Audit</h3>
+      <p>Invite others to view this audit or copy the live link.</p>
+      <div class="share-input-wrap">
+        <input type="text" placeholder="Add people by email..." id="shareEmail">
+        <button class="btn-primary" id="inviteBtn" onclick="sendInvite()">Invite</button>
+      </div>
+      <div class="share-actions">
+        <button class="btn-outline" onclick="copyLink()">
+          <span class="icon">🔗</span> Copy Link
+        </button>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal card" id="deleteModal" style="display:none;">
+      <h3>Delete Audit?</h3>
+      <p>This will permanently remove the audit data from your local system and Google Sheets sync. This action cannot be undone.</p>
+      <div class="modal-footer">
+        <button class="btn-text" onclick="closeModal()">Cancel</button>
+        <button class="btn-danger" id="confirmDeleteBtn">Delete Permanently</button>
+      </div>
+    </div>
+
+    <!-- Detail View Overlay -->
+    <div class="modal detail-modal card" id="detailModal" style="display:none;">
+      <div class="modal-close" onclick="closeModal()">×</div>
+      <div class="detail-modal-header" id="detailModalHeader">
+        <!-- Brand title and issue count badge go here -->
+      </div>
+      <div id="detailContent">
+        <!-- Scrollable table content goes here -->
+      </div>
+    </div>
+
+  </div><!-- /modalOverlay -->
+
+  <!-- Live Viewport Portal (Draggable HUD) - MOVED OUTSIDE OVERLAY -->
+  <div class="portal-viewport" id="viewportPortal" style="display:none;">
+    <div class="portal-header" id="portalHeader">
+      <div class="portal-title">
+        <span class="portal-rec-dot"></span>
+        LIVE AGENT VISION
+      </div>
+      <div class="portal-controls">
+        <button class="portal-btn" onclick="closePortal()">×</button>
+      </div>
+    </div>
+    <div class="portal-content" id="portalContent">
+      <div id="agentCursor" class="portal-cursor" style="display:none;"></div>
+      <img id="liveSnapshot" src="../static/live_audit.png" alt="Agent Vision">
+      <div class="portal-overlay-text">SYNCHRONIZING WITH CLOUD...</div>
+    </div>
+  </div>
+
+    <!-- API Error Modal (Gemini Style) -->
+    <div id="apiErrorModal" class="modal-overlay" style="display: none;">
+      <div class="modal gemini-modal">
+        <div class="gemini-glow"></div>
+        <div class="modal-close" onclick="closeApiError()">&times;</div>
+        <div class="modal-body" style="text-align: center; position: relative; z-index: 2;">
+          <div class="api-icon-wrap">🔑</div>
+          <h3 id="apiErrorTitle" style="color: #fff; margin-bottom: 0.5rem;">API Key Issue</h3>
+          <p id="apiErrorMsg" style="color: rgba(255,255,255,0.7); font-size: 0.9rem; line-height: 1.6;">A valid Gemini API Key is required to power the heuristic engine. Please check your key or provide a new one.</p>
+          <div class="modal-footer" style="justify-content: center; gap: 1rem; margin-top: 2rem;">
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="btn-outline">Get Free Key</a>
+            <button class="btn-primary" onclick="closeApiError()">Try Again</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Modal (Bottom Sheet on Mobile) -->
+    <div id="successModal" class="bottom-sheet-overlay" onclick="closeSuccessModal()">
+      <div class="bottom-sheet" onclick="event.stopPropagation()" style="text-align: center;">
+        <div class="sheet-handle"></div>
+        <div style="font-size:4rem; margin-bottom:1rem; animation: scaleIn 0.5s ease;">✅</div>
+        <h2 id="successTitle" style="margin-bottom: 0.5rem; color: #fff;">Success!</h2>
+        <p id="successMsg" style="color:var(--text-dim); margin-bottom:2rem;"></p>
+        <button class="btn-primary" onclick="closeSuccessModal()" style="width: 100%; height: 52px; border-radius: 14px; font-weight: 700;">Great!</button>
+      </div>
+    </div>
+
+    <!-- Model Selection Bottom Sheet (Mobile Only) -->
+    <div id="modelBottomSheet" class="bottom-sheet-overlay" onclick="closeModelSheet()">
+      <div class="bottom-sheet" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <h3>Select AI Model</h3>
+          <p>Choose the intelligence engine for your audit</p>
+        </div>
+        <div class="sheet-options">
+          <div class="sheet-option active" data-value="gemini" onclick="selectModel('gemini')">
+            <div class="option-info">
+              <span class="option-name">Gemini 1.5 Pro</span>
+              <span class="option-desc">Google's most capable vision model</span>
+            </div>
+            <div class="option-check">✓</div>
+          </div>
+          <div class="sheet-option" data-value="openai" onclick="selectModel('openai')">
+            <div class="option-info">
+              <span class="option-name">GPT-4o</span>
+              <span class="option-desc">High-speed multimodal intelligence</span>
+            </div>
+            <div class="option-check"></div>
+          </div>
+          <div class="sheet-option" data-value="anthropic" onclick="selectModel('anthropic')">
+            <div class="option-info">
+              <span class="option-name">Claude 3.5 Sonnet</span>
+              <span class="option-desc">Nuanced reasoning and high accuracy</span>
+            </div>
+            <div class="option-check"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast-notification" style="display:none;"></div>
+
+    <footer class="main-footer">
+      <div class="footer-badge">
+        <span class="badge">© 2026 UX AUDIT ENGINE. <span class="footer-extra">• PUBLIC DOMAIN HEURISTIC ANALYSIS</span></span>
+      </div>
+    </footer>
+
+    <script src="../static/main.js"></script>
+</body>
+</html>
