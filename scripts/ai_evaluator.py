@@ -155,7 +155,9 @@ def run_ux_audit_worker(task_id, url, user_api_key=None, provider='gemini'):
         with sync_playwright() as p:
             is_render = os.environ.get('RENDER')
             args = ["--disable-blink-features=AutomationControlled"]
-            if not is_render:
+            if is_render:
+                args.extend(["--disable-dev-shm-usage", "--no-sandbox", "--disable-gpu"])
+            else:
                 # Use a professional desktop resolution and remove forced positioning
                 args.extend(["--window-size=1920,1080"])
 

@@ -28,5 +28,6 @@ RUN playwright install chromium && playwright install-deps chromium
 
 COPY . .
 
-# Start the WSGI server
-CMD gunicorn app:app --bind 0.0.0.0:${PORT:-10000}
+# Start the WSGI server with increased timeout and threads to prevent SSE dropping
+CMD gunicorn app:app --bind 0.0.0.0:${PORT:-10000} --timeout 600 --threads 8
+
