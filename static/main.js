@@ -275,6 +275,11 @@ async function startAudit() {
             issues: issueCount
           });
           
+          // LEAD ARCHITECT FIX: Save full report to LocalStorage to survive server restarts on Free Tier
+          if (resultData) {
+            localStorage.setItem(`audit_report_${taskId}`, JSON.stringify(resultData));
+          }
+
           saveHistory();
 
           document.getElementById('statusCard').style.display = 'none';

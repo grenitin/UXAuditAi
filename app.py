@@ -262,7 +262,17 @@ def audit_report(task_id):
     import ai_evaluator
     report_path = os.path.join(ai_evaluator.REPORTS_DIR, f"{task_id}.json")
     if not os.path.exists(report_path):
-        return f"<h1>404: Report Not Found</h1><p>No local data for task {task_id}.</p>", 404
+        return """
+        <body style="background:#0a0a0f; color:white; font-family:sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; flex-direction:column; text-align:center; padding:20px;">
+            <h1 style="font-size:48px; margin-bottom:10px;">404</h1>
+            <p style="color:#a1a1aa; font-size:18px; max-width:500px;">
+                <b>Report Not Found:</b> This audit session has expired or the server has restarted. 
+                <br/><br/>
+                On the free tier, reports are temporary. Please run a new audit from the dashboard.
+            </p>
+            <a href="/" style="margin-top:30px; background:#7c6ef2; color:white; padding:12px 30px; border-radius:8px; text-decoration:none; font-weight:bold;">Return to Dashboard</a>
+        </body>
+        """, 404
         
     try:
         with open(report_path, 'r', encoding='utf-8') as f:
