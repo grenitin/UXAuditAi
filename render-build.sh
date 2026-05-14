@@ -3,4 +3,6 @@
 set -o errexit
 
 pip install -r requirements.txt
-playwright install chromium
+
+# Install Playwright and its system-level dependencies
+python -m playwright install --with-deps chromium
