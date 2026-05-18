@@ -256,9 +256,10 @@ async function startAudit() {
         // Automatically open the detail modal and save to history
         setTimeout(async () => {
           let issueCount = 0;
+          let resultData = null;
           try {
             const res = await fetch(`/results/${taskId}`);
-            const resultData = await res.json();
+            resultData = await res.json();
             if (resultData.issues) issueCount = resultData.issues.length;
           } catch (e) {
             console.error("Failed to fetch results for history:", e);
