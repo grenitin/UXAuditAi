@@ -58,10 +58,21 @@ def run_audit():
     task_id = str(uuid.uuid4())
     # multiprocessing.Process with 'spawn' is more stable than threading on macOS for vision tasks
     # as it prevents gRPC/Playwright file descriptor leakage from the parent process.
-    ai_evaluator.update_status(task_id, f"Spawning isolated audit process ({provider})...")
-
-    p = multiprocessing.Process(target=ai_evaluator.run_ux_audit_worker, args=(task_id, url, api_key, provider))
-    p.start()
+    # On Linux/Docker (Render Free Tier 512MB RAM), we use a lightweight background Thread to prevent OOM memory crashes.
+    is_linux_or_render = sys.platform.startswith('linux') or os.environ.get('RENDER')
+    
+    if is_linux_or_render:
+        import threading
+        ai_evaluator.update_status(task_id, f"Initializing lightweight background worker ({provider})...")
+        print(f"[WORKER CONFIG] Spawning lightweight background thread on Linux/Render...")
+        t = threading.Thread(target=ai_evaluator.run_ux_audit_worker, args=(task_id, url, api_key, provider))
+        t.daemon = True
+        t.start()
+    else:
+        ai_evaluator.update_status(task_id, f"Spawning isolated audit process ({provider})...")
+        print(f"[WORKER CONFIG] Spawning isolated multiprocessing process on macOS...")
+        p = multiprocessing.Process(target=ai_evaluator.run_ux_audit_worker, args=(task_id, url, api_key, provider))
+        p.start()
 
     return jsonify({'task_id': task_id})
 
@@ -96,6 +107,9 @@ def status(task_id):
                 yield f"data: {json.dumps(task)}\n\n"
                 last_status = current_msg
                 last_task = current_task
+            else:
+                # Send a lightweight keep-alive comment to keep proxies like Render/Cloudflare from closing the connection
+                yield ": keep-alive\n\n"
 
             if task.get('complete'):
                 break
