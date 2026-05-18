@@ -820,16 +820,39 @@ async function sendInvite() {
   btn.disabled = true;
 
   try {
-    // 1. Fetch the actual results for this share
-    const res = await fetch('/results');
-    const data = await res.json();
-    const issues = data.issues || [];
+    let issues = [];
+    let payload = null;
 
-    const payload = {
-      brand: audit.brand,
-      url: audit.url,
-      issues: issues
-    };
+    // Try LocalStorage first (bulletproof free-tier persistence fallback)
+    const localDataStr = localStorage.getItem(`audit_report_${activeShareId}`);
+    if (localDataStr) {
+      try {
+        const localData = JSON.parse(localDataStr);
+        issues = localData.issues || [];
+        payload = {
+          brand: audit.brand,
+          url: audit.url,
+          issues: issues
+        };
+        console.log("[SHARE] Loaded audit report from LocalStorage for sharing.");
+      } catch (e) {
+        console.error("[SHARE] LocalStorage parse failed:", e);
+      }
+    }
+
+    // Fallback: Fetch from the server if not present in LocalStorage
+    if (!payload) {
+      const res = await fetch(`/results/${activeShareId}`);
+      if (!res.ok) throw new Error(`Report not found on server (${res.status})`);
+      const data = await res.json();
+      issues = data.issues || [];
+      payload = {
+        brand: audit.brand,
+        url: audit.url,
+        issues: issues
+      };
+      console.log("[SHARE] Loaded audit report from Server for sharing.");
+    }
 
     const response = await fetch('/api/share', {
       method: 'POST',
@@ -862,8 +885,21 @@ async function sendInvite() {
   }
 }
 
-function copyLink() {
-  alert("Link copied to clipboard!");
+async function copyLink() {
+  const shareLink = window.location.origin + '/report/' + activeShareId;
+  try {
+    await navigator.clipboard.writeText(shareLink);
+    showToast("Report link copied to clipboard!");
+  } catch (err) {
+    // Fallback if clipboard API is blocked/unavailable
+    const input = document.createElement('input');
+    input.value = shareLink;
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand('copy');
+    document.body.removeChild(input);
+    showToast("Report link copied to clipboard!");
+  }
   closeModal();
 }
 
