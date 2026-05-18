@@ -198,7 +198,7 @@ def send_invitation_email(to_email, brand_name, share_url):
         """
         msg.attach(MIMEText(html, "html"))
 
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=10) as server:
             server.starttls()
             server.login(SMTP_USER, SMTP_PASS)
             server.send_message(msg)
@@ -234,10 +234,15 @@ def api_share():
             
         share_url = f"{request.host_url}view/{share_id}"
         
-        # --- SEND LIVE EMAIL ---
+        # --- SEND LIVE EMAIL (Non-blocking background thread) ---
         email_sent = False
         if email:
-            email_sent = send_invitation_email(email, brand, share_url)
+            import threading
+            print(f"[EMAIL] Spawning background thread to send invitation to {email}...")
+            email_thread = threading.Thread(target=send_invitation_email, args=(email, brand, share_url))
+            email_thread.daemon = True
+            email_thread.start()
+            email_sent = True
         
         return jsonify({
             'status': 'success', 
