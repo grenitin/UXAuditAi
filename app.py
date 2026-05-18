@@ -281,17 +281,8 @@ def audit_report(task_id):
     import ai_evaluator
     report_path = os.path.join(ai_evaluator.REPORTS_DIR, f"{task_id}.json")
     if not os.path.exists(report_path):
-        return """
-        <body style="background:#0a0a0f; color:white; font-family:sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; flex-direction:column; text-align:center; padding:20px;">
-            <h1 style="font-size:48px; margin-bottom:10px;">404</h1>
-            <p style="color:#a1a1aa; font-size:18px; max-width:500px;">
-                <b>Report Not Found:</b> This audit session has expired or the server has restarted. 
-                <br/><br/>
-                On the free tier, reports are temporary. Please run a new audit from the dashboard.
-            </p>
-            <a href="/" style="margin-top:30px; background:#7c6ef2; color:white; padding:12px 30px; border-radius:8px; text-decoration:none; font-weight:bold;">Return to Dashboard</a>
-        </body>
-        """, 404
+        # Lead Architect Fix: Render placeholder layout so the frontend can restore the report from LocalStorage!
+        return render_template('audit_report.html', task_id=task_id, issues=[], brand="Restoring Report...", url="", restored_from_local=True)
         
     try:
         with open(report_path, 'r', encoding='utf-8') as f:

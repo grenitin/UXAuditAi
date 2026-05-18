@@ -1671,6 +1671,170 @@
             t.style.display = 'block';
             setTimeout(() => t.style.display = 'none', 3000);
         }
+
+        // --- CLIENT-SIDE OFFLINE HYDRATION ---
+        const restoredFromLocal = {{ restored_from_local|default(false)|tojson }};
+        if (restoredFromLocal || auditData.issues.length === 0) {
+            const localDataStr = localStorage.getItem(`audit_report_${taskId}`);
+            if (localDataStr) {
+                try {
+                    const localData = JSON.parse(localDataStr);
+                    auditData.issues = localData.issues || [];
+                    const brandName = localData.brand || 'UX Audit';
+                    
+                    // Update header values
+                    document.querySelector('.brand-info h1').textContent = brandName;
+                    document.querySelector('.issues-badge').textContent = `${auditData.issues.length} ISSUES`;
+                    
+                    // Render Views
+                    renderRestoredCards(auditData.issues);
+                    renderRestoredSpreadsheet(auditData.issues);
+                    
+                    console.log("[RESTORE] Report successfully restored from LocalStorage!");
+                } catch (e) {
+                    console.error("[RESTORE] Failed to parse local storage data:", e);
+                    show404Page();
+                }
+            } else {
+                show404Page();
+            }
+        }
+
+        function renderRestoredCards(issues) {
+            const container = document.getElementById('cardsView');
+            container.innerHTML = '';
+            
+            issues.forEach((issue, idx) => {
+                const sev = String(issue.Severity || '3');
+                const pri = String(issue.Priority || 'P2').toUpperCase();
+                
+                const sevClass = ['4','5'].includes(sev) ? 'sev-high' : (sev === '3' ? 'sev-med' : 'sev-low');
+                const priClass = ['P0','P1'].includes(pri) ? 'pri-p1' : (pri === 'P2' ? 'pri-p2' : 'pri-p3');
+                
+                const screenshotHtml = issue.Screenshot ? `
+                    <div class="img-box" onclick="zoom('${issue.Screenshot}')">
+                        <img src="${issue.Screenshot}" class="evidence-img">
+                    </div>
+                ` : '';
+                
+                const card = document.createElement('article');
+                card.className = 'report-card';
+                card.setAttribute('data-index', idx);
+                card.innerHTML = `
+                    <div class="card-header">
+                        ${screenshotHtml}
+                        <div class="badge-stack">
+                            <div class="card-meta">
+                                <div class="meta-pill ${sevClass}" onclick="openPickerSheet(${idx}, 'Severity', this, this.querySelector('select'))">
+                                    <span>Severity</span>
+                                    <select class="severity-select" onchange="updateLocalIssue(${idx}, 'Severity', this.value, this.parentElement)">
+                                        <option value="1" ${sev === '1' ? 'selected' : ''}>1</option>
+                                        <option value="2" ${sev === '2' ? 'selected' : ''}>2</option>
+                                        <option value="3" ${sev === '3' ? 'selected' : ''}>3</option>
+                                        <option value="4" ${sev === '4' ? 'selected' : ''}>4</option>
+                                        <option value="5" ${sev === '5' ? 'selected' : ''}>5</option>
+                                    </select>
+                                </div>
+                                <div class="meta-pill ${priClass}" onclick="openPickerSheet(${idx}, 'Priority', this, this.querySelector('select'))">
+                                    <span>Priority</span>
+                                    <select class="priority-select" onchange="updateLocalIssue(${idx}, 'Priority', this.value, this.parentElement)">
+                                        <option value="P0" ${pri === 'P0' ? 'selected' : ''}>P0</option>
+                                        <option value="P1" ${pri === 'P1' ? 'selected' : ''}>P1</option>
+                                        <option value="P2" ${pri === 'P2' ? 'selected' : ''}>P2</option>
+                                        <option value="P3" ${pri === 'P3' ? 'selected' : ''}>P3</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <span class="heuristic-label">Heuristic: ${issue.Heuristic}</span>
+                    <h2 class="issue-desc">${issue['Issue Description']}</h2>
+
+                    <div class="insights-split">
+                        <div class="insight-card">
+                            <div class="insight-header"><span>🧠</span> Behavioral</div>
+                            <div class="insight-body">${issue['Behavioral Insight']}</div>
+                        </div>
+                        <div class="insight-card">
+                            <div class="insight-header"><span>💬</span> Attitudinal</div>
+                            <div class="insight-body">${issue['Attitudinal Insight']}</div>
+                        </div>
+                    </div>
+
+                    <div class="rec-box" style="margin-top: 1.5rem;">
+                        <div class="rec-label"><span>💡</span> Strategic Recommendation</div>
+                        <div class="rec-text">${issue.Recommendation}</div>
+                    </div>
+
+                    <div class="usage-metadata" style="margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-family: 'JetBrains Mono'; font-size: 0.7rem; color: var(--text-dim); opacity: 0.7;">
+                        <div class="ai-engine-info">AI Engine: ${issue.Model || 'Gemini'}</div>
+                        <div class="usage-info" style="display: flex; gap: 1rem;">
+                            <span>Tokens: ${issue.Tokens || 0}</span>
+                            <span>Est. Cost: ₹${issue['Cost (Rs)'] || 0}</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderRestoredSpreadsheet(issues) {
+            const tbody = document.querySelector('#spreadsheetView tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            
+            issues.forEach((issue, idx) => {
+                const sev = String(issue.Severity || '3');
+                const pri = String(issue.Priority || 'P2').toUpperCase();
+                
+                const screenshotHtml = issue.Screenshot ? `
+                    <img src="${issue.Screenshot}" class="row-screenshot" onclick="zoom('${issue.Screenshot}')">
+                ` : '-';
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${screenshotHtml}</td>
+                    <td>
+                        <select class="editable-select" onchange="updateLocalIssue(${idx}, 'Severity', this.value)">
+                            <option value="1" ${sev === '1' ? 'selected' : ''}>1</option>
+                            <option value="2" ${sev === '2' ? 'selected' : ''}>2</option>
+                            <option value="3" ${sev === '3' ? 'selected' : ''}>3</option>
+                            <option value="4" ${sev === '4' ? 'selected' : ''}>4</option>
+                            <option value="5" ${sev === '5' ? 'selected' : ''}>5</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="editable-select" onchange="updateLocalIssue(${idx}, 'Priority', this.value)">
+                            <option value="P1" ${pri === 'P1' ? 'selected' : ''}>P1</option>
+                            <option value="P2" ${pri === 'P2' ? 'selected' : ''}>P2</option>
+                            <option value="P3" ${pri === 'P3' ? 'selected' : ''}>P3</option>
+                        </select>
+                    </td>
+                    <td style="font-family:'JetBrains Mono'; font-size:0.85rem; font-weight:600; color:var(--danger);">${issue.Heuristic}</td>
+                    <td style="font-weight:600;">${issue['Issue Description']}</td>
+                    <td style="color:var(--text-mid); font-size:0.8rem;">${issue.Recommendation}</td>
+                    <td style="font-family:'JetBrains Mono'; font-size:0.75rem; color:var(--text-dim);">${issue.Tokens || 0}</td>
+                    <td style="font-family:'JetBrains Mono'; font-size:0.75rem; color:var(--text-dim);">${issue['Cost (Rs)'] || 0}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function show404Page() {
+            document.body.innerHTML = `
+            <div class="bg-grid"></div>
+            <div style="background:#0a0a0f; color:white; font-family:sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; flex-direction:column; text-align:center; padding:20px; position:relative; z-index:10;">
+                <h1 style="font-size:48px; margin-bottom:10px; font-family:'Outfit', sans-serif;">404</h1>
+                <p style="color:#a1a1aa; font-size:18px; max-width:500px; line-height:1.6;">
+                    <b>Report Not Found:</b> This audit session has expired or the server has restarted. 
+                    <br/><br/>
+                    On the free tier, reports are temporary. Please run a new audit from the dashboard.
+                </p>
+                <a href="/" style="margin-top:30px; background:#7c6ef2; color:white; padding:12px 30px; border-radius:8px; text-decoration:none; font-weight:bold; box-shadow:0 4px 15px rgba(124,110,242,0.3);">Return to Dashboard</a>
+            </div>
+            `;
+        }
     </script>
 </body>
 </html>
