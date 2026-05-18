@@ -144,6 +144,10 @@ def run_ux_audit_worker(task_id, url, user_api_key=None, provider='gemini'):
             raise Exception(f"AI Handshake Failed: No compatible models found for your {provider} API key. Please check your key permissions.")
 
         # PILOT FOCUS: Exclusively audit the landing page provided
+        url_lower = url.lower()
+        if url_lower.startswith('file://') or 'localhost' in url_lower or '127.0.0.1' in url_lower:
+            raise Exception("Cannot audit local files or localhost URLs on the live cloud server. The remote Render server has no access to your computer's local files. Please enter a public website URL (e.g. https://google.com or a deployed Vercel link).")
+
         urls_to_crawl = [url if url.startswith('http') else 'https://' + url]
 
         
@@ -153,7 +157,8 @@ def run_ux_audit_worker(task_id, url, user_api_key=None, provider='gemini'):
         # 2. DISCOVERY PHASE — Capturing Multi-Fold Visual Context
         screenshots_data = []
         with sync_playwright() as p:
-            is_render = os.environ.get('RENDER')
+            import sys
+            is_render = os.environ.get('RENDER') or sys.platform.startswith('linux')
             args = ["--disable-blink-features=AutomationControlled"]
             if is_render:
                 args.extend(["--disable-dev-shm-usage", "--no-sandbox", "--disable-gpu"])
@@ -269,11 +274,16 @@ def run_ux_audit_worker(task_id, url, user_api_key=None, provider='gemini'):
                     page.close()
                 except Exception as e:
                     print(f"Page capture error: {e}")
+                    raise Exception(f"Failed to capture screenshots. The URL may be offline, blocked, or invalid. Error: {str(e)}")
             
             browser.close()
             
             # 2.5 Focus restoration
             focus_browser()
+
+        # Ensure we actually captured screenshots before moving to AI synthesis
+        if not screenshots_data:
+            raise Exception("No screenshots were captured. The target URL might be offline, blocking automated browsers, or invalid. If you are attempting to audit a local development URL, please deploy it publicly first.")
 
         # 3. INTELLIGENCE PHASE
         if screenshots_data:
